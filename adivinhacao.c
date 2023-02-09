@@ -35,7 +35,7 @@ printf("       \\__|_|__/ 				\n");
 printf("\n\n");
 
 
-while(jogardenovo == 1) {
+do {
 
 printf("\nQual o nível de dificuldade?\n");
 printf("(1)Fácil (2)Médio (3)Difícil\n\n");
@@ -144,7 +144,8 @@ printf("\n\033[1;31mVOCE PERDEU! \033[mTente novamente!\n\n");
 
 printf("\nDeseja jogar novamente? Se sim, Digite 1, senão, digite 0: ");
 scanf("%d", &jogardenovo);
-}
+
+} while(jogardenovo == 1);
 
 printf("\n\033[32mOBRIGADO POR JOGAR!!\033[m");
 printf("\n\033[33mFim de jogo\033[m\n\n");
