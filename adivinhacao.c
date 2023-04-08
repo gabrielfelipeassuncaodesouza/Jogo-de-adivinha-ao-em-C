@@ -8,16 +8,22 @@
 #define TENTATIVAS_DIFICIL 6
 #define PONTOS_INICIAL 1000
 
+typedef struct snumber {
+
+	int numeroSecreto;
+	int interEnd;
+	int interStar;
+
+} snumber;
+
 typedef struct gameState {
 
-	int numerosecreto;
+	snumber snumber;
 	int tentativas;
 	double pontos;
 	int nivel;
 	int totaldetentativas;
 	bool acertou;
-	int interstar;
-	int interend;
 	bool jogardenovo;
 
 } gameState;
@@ -28,14 +34,14 @@ void init() {
 
 	srand(time(0));
 
-	game.numerosecreto = 0;
+	game.snumber.numeroSecreto = 0;
         game.tentativas = 0;
         game.pontos = PONTOS_INICIAL;
 	game.nivel = 0;
 	game.totaldetentativas = 0; 
         game.acertou = false;
-	game.interstar = 0;
-	game.interend = 0;
+	game.snumber.interStar = 0;
+	game.snumber.interEnd = 0;
 	game.jogardenovo = false;
 }
 
@@ -94,8 +100,8 @@ void selectInterval(gameState* game) {
 	printf("Até: ");
 	scanf("%d", &buf2);
 
-	game->interstar = buf1;
-	game->interend = buf2;
+	game->snumber.interStar = buf1;
+	game->snumber.interEnd = buf2;
 }
 
 void printVitoria() {
@@ -144,6 +150,45 @@ bool jogarNovamente()
 	return false;
 }
 
+void gameLoop(int *chute, int qtd) {
+
+	printf("\n\033[32mTentativa %d de %d\033[m", qtd, game.totaldetentativas);
+	printf("\nQual é o seu chute? ");
+	scanf("%d", chute);
+
+	int lastguessedsnumber;
+
+	if (*chute == lastguessedsnumber) {
+
+		printf("\n\033[31mVocê ja chutou esse número!\033[m\n");
+		gameLoop(chute, qtd);
+	}
+
+	lastguessedsnumber = *chute;
+
+	if(*chute < 0) {
+
+		printf("\n\033[31mVocê nao pode chutar numeros negativos!\033[m\n");
+		gameLoop(chute, qtd);
+	}
+			
+	game.acertou = *chute == game.snumber.numeroSecreto;
+	bool maior = *chute > game.snumber.numeroSecreto;
+
+	if(game.acertou || qtd == game.totaldetentativas)
+		return;
+	else if(maior)
+		printf("\nSeu chute foi maior que o número secreto!\n");
+	else 
+		printf("\nSeu chute foi menor que o número secreto!\n");
+
+	double pontosperdidos = abs(*chute - game.snumber.numeroSecreto) / 2.0;
+	game.pontos = game.pontos - pontosperdidos;
+	game.tentativas++;
+
+	gameLoop(chute, qtd+1);
+}
+
 int main() {
 
 	int chute;
@@ -152,58 +197,17 @@ int main() {
 	printAbertura();
 
 	do {
-
 		selectLevel(&game);
 		selectInterval(&game);
 
-		game.numerosecreto = (rand() % (game.interend - game.interstar)) + game.interstar;
+		game.snumber.numeroSecreto = (rand() % (game.snumber.interEnd - game.snumber.interStar)) + game.snumber.interStar;
 
-		for(int i = 1; i <= game.totaldetentativas; i++) {
+		gameLoop(&chute, 1);
 
-			printf("\n\033[32mTentativa %d de %d\033[m", i, game.totaldetentativas);
-			printf("\nQual é o seu chute? ");
-			scanf("%d", &chute);
-
-			int lastguessednumber;
-
-			if (chute == lastguessednumber) {
-
-				printf("\n\033[31mVocê ja chutou esse número!\033[m\n");
-				i--;
-				continue;
-			}
-
-			lastguessednumber = chute;
-
-			if(chute < 0) {
-
-				printf("\n\033[31mVocê nao pode chutar numeros negativos!\033[m\n");
-				i--;
-				continue;
-			}
-			
-			game.acertou = chute == game.numerosecreto;
-			bool maior = chute > game.numerosecreto;
-
-			if(game.acertou) {
-				break;
-
-			} else if(maior) {
-				printf("\nSeu chute foi maior que o número secreto!\n");
-			} else {
-				printf("\nSeu chute foi menor que o número secreto!\n");
-			}
-
-			double pontosperdidos = abs(chute - game.numerosecreto) / 2.0;
-			game.pontos = game.pontos - pontosperdidos;
-			game.tentativas++;
-		}
-
-		if(game.acertou) {
+		if(game.acertou)
 			printVitoria();
-		} else {
+		else
 			printDerrota();
-		}
 	
 	} while(jogarNovamente());
 
