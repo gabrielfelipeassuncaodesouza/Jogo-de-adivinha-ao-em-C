@@ -1,152 +1,212 @@
+#include <stdbool.h>
 #include <stdio.h>
-#include<stdlib.h>
-#include<time.h>
+#include <stdlib.h>
+#include <time.h>
 
 #define TENTATIVAS_FACIL 20
 #define TENTATIVAS_MEDIO 15
 #define TENTATIVAS_DIFICIL 6
 #define PONTOS_INICIAL 1000
 
+typedef struct gameState {
+
+	int numerosecreto;
+	int tentativas;
+	double pontos;
+	int nivel;
+	int totaldetentativas;
+	bool acertou;
+	int interstar;
+	int interend;
+	bool jogardenovo;
+
+} gameState;
+
+gameState game;
+
+void init() {
+
+	srand(time(0));
+
+	game.numerosecreto = 0;
+        game.tentativas = 0;
+        game.pontos = PONTOS_INICIAL;
+	game.nivel = 0;
+	game.totaldetentativas = 0; 
+        game.acertou = false;
+	game.interstar = 0;
+	game.interend = 0;
+	game.jogardenovo = false;
+}
+
+
+void printAbertura() {
+
+	printf("\n\n");
+	printf("        P /_\\ P 				\n");
+	printf("      /_\\_|_|_/_\\ 				\n");
+	printf("  n_n | ||. .|| | n_n          Bem-vindo ao 	\n");
+	printf("  |_|_|nnnn nnnn|_|_|      Jogo de Adivinhação! \n");
+	printf(" |\" \" |   |_|  |\"  \" | 			\n");
+	printf(" |_____| ' _ ' |_____| 				\n");
+	printf("       \\__|_|__/ 				\n");
+	printf("\n\n");
+
+}
+
+void selectGuesses(gameState* game) {
+
+	switch(game->nivel) {
+
+		case 1:
+			game->totaldetentativas = TENTATIVAS_FACIL;
+			break;
+		case 2:
+			game->totaldetentativas = TENTATIVAS_MEDIO;
+			break;
+		default:
+			game->totaldetentativas = TENTATIVAS_DIFICIL;
+		break;
+	}
+}
+
+void selectLevel(gameState* game) {
+
+	int buf;
+
+	printf("\nQual o nível de dificuldade?\n");
+	printf("(1)Fácil (2)Médio (3)Difícil\n\n");
+	printf("Escolha: ");
+	scanf("%d", &buf);
+
+	game->nivel = buf;
+	selectGuesses(game);
+}
+
+void selectInterval(gameState* game) {
+
+	//change to an array
+	int buf1, buf2;
+
+	printf("\n\033[33mAgora escolha o intervalo que o computador irá chutar!\033[m");
+	printf("\nDe: ");
+	scanf("%d", &buf1);
+	printf("Até: ");
+	scanf("%d", &buf2);
+
+	game->interstar = buf1;
+	game->interend = buf2;
+}
+
+void printVitoria() {
+
+	printf("\n\n\033[32m              OOOOOOOOOOO 	\n");
+	printf("          OOOOOOOOOOOOOOOOOOO 		\n");
+	printf("       OOOOOO  OOOOOOOOO  OOOOOO 	\n");
+	printf("     OOOOOO      OOOOO      OOOOOO 	\n");
+	printf("   OOOOOOOO  #   OOOOO  #   OOOOOOOO 	\n");
+	printf("  OOOOOOOOOO    OOOOOOO    OOOOOOOOOO 	\n");
+	printf(" OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO 	\n");
+	printf(" OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO 	\n");
+	printf(" OOOO  OOOOOOOOOOOOOOOOOOOOOOOOO  OOOO 	\n");
+	printf("  OOOO  OOOOOOOOOOOOOOOOOOOOOOO   OOOO 	\n");
+	printf("   OOOO   OOOOOOOOOOOOOOOOOOOO   OOOO 	\n");
+	printf("     OOOOO   OOOOOOOOOOOOOOO   OOOO 	\n");
+	printf("       OOOOOO   OOOOOOOOO   OOOOOO 	\n");
+	printf("          OOOOOO         OOOOOO 	\n");
+	printf("              OOOOOOOOOOOO 		\n");
+
+	printf("\n\033[1;32mPARABÉNS! \033[mVocê acertou!\n");
+	printf("\nVocê fez %.2f pontos. Até a próxima!\n\n", game.pontos);
+
+}
+
+void printDerrota() {
+
+	printf("\n\n\033[31m \\|/ ____ \\|/ 	\n");
+	printf("  @~/ ,. \\~@ 			\n");
+	printf(" /_( \\__/ )_\\ 		\n");
+	printf("    \\__U_/ 			\n");
+
+	printf("\n\033[1;31mVOCE PERDEU! \033[mTente novamente!\n\n");
+}
+
+bool jogarNovamente()
+{
+
+	int buf;
+
+	printf("\nDeseja jogar novamente? Se sim, Digite 1, senão, digite 0: ");
+	scanf("%d", &buf);
+
+	if(buf) return true;
+
+	return false;
+}
+
 int main() {
 
-//Define a Semente pra gerar o numero secreto
+	int chute;
 
-srand(time(0));
+	init();
+	printAbertura();
 
-int numerosecreto;
-int chute;
-int tentativas = 1;
-double pontos = PONTOS_INICIAL;
-int nivel;
-int totaldetentativas;
-int acertou = 0;
-int interstar;
-int interend;
-int jogardenovo = 1;
+	do {
 
-printf("\n\n");
-printf("        P /_\\ P 				\n");
-printf("      /_\\_|_|_/_\\ 				\n");
-printf("  n_n | ||. .|| | n_n          Bem-vindo ao 	\n");
-printf("  |_|_|nnnn nnnn|_|_|      Jogo de Adivinhação! \n");
-printf(" |\" \" |   |_|  |\"  \" | 			\n");
-printf(" |_____| ' _ ' |_____| 				\n");
-printf("       \\__|_|__/ 				\n");
-printf("\n\n");
+		selectLevel(&game);
+		selectInterval(&game);
 
+		game.numerosecreto = (rand() % (game.interend - game.interstar)) + game.interstar;
 
-do {
+		for(int i = 1; i <= game.totaldetentativas; i++) {
 
-printf("\nQual o nível de dificuldade?\n");
-printf("(1)Fácil (2)Médio (3)Difícil\n\n");
-printf("Escolha: ");
-scanf("%d", &nivel);
+			printf("\n\033[32mTentativa %d de %d\033[m", i, game.totaldetentativas);
+			printf("\nQual é o seu chute? ");
+			scanf("%d", &chute);
 
-switch(nivel) {
+			int lastguessednumber;
 
-case 1:
-	totaldetentativas = TENTATIVAS_FACIL;
-	break;
-case 2:
-	totaldetentativas = TENTATIVAS_MEDIO;
-	break;
-default:
-	totaldetentativas = TENTATIVAS_DIFICIL;
-	break;
-}
+			if (chute == lastguessednumber) {
 
-printf("\n\033[33mAgora escolha o intervalo que o computador irá chutar!\033[m");
-printf("\n\nDe: ");
-scanf("%d", &interstar);
-printf("Até: ");
-scanf("%d", &interend);
+				printf("\n\033[31mVocê ja chutou esse número!\033[m\n");
+				i--;
+				continue;
+			}
 
-numerosecreto = (rand() % (interend - interstar)) + interstar;
+			lastguessednumber = chute;
 
-for(int i = 1; i <= totaldetentativas; i++) {
+			if(chute < 0) {
 
-printf("\n\033[32mTentativa %d de %d\033[m", i, totaldetentativas);
-printf("\nQual é o seu chute? ");
-scanf("%d", &chute);
+				printf("\n\033[31mVocê nao pode chutar numeros negativos!\033[m\n");
+				i--;
+				continue;
+			}
+			
+			game.acertou = chute == game.numerosecreto;
+			bool maior = chute > game.numerosecreto;
 
-int lastguessednumber;
+			if(game.acertou) {
+				break;
 
-if (chute == lastguessednumber) {
+			} else if(maior) {
+				printf("\nSeu chute foi maior que o número secreto!\n");
+			} else {
+				printf("\nSeu chute foi menor que o número secreto!\n");
+			}
 
-	printf("\n\033[31mVocê ja chutou esse número!\033[m\n");
-	i--;
-	continue;
+			double pontosperdidos = abs(chute - game.numerosecreto) / 2.0;
+			game.pontos = game.pontos - pontosperdidos;
+			game.tentativas++;
+		}
 
-}
+		if(game.acertou) {
+			printVitoria();
+		} else {
+			printDerrota();
+		}
+	
+	} while(jogarNovamente());
 
-lastguessednumber = chute;
-
-if(chute < 0) {
-
-	printf("\n\033[31mVocê nao pode chutar numeros negativos!\033[m\n");
-	i--;
-	continue;
-}
-
-acertou = chute == numerosecreto;
-int maior = chute > numerosecreto;
-
-if(acertou) {
-
-	break;
-
-} else if(maior) {
-
-	printf("\nSeu chute foi maior que o número secreto!\n");
-
-} else {
-
-	printf("\nSeu chute foi menor que o número secreto!\n");
-
-}
-
-double pontosperdidos = abs(chute - numerosecreto) / 2.0;
-pontos = pontos - pontosperdidos;
-tentativas++;
-
-}
-
-if(acertou) {
-
-printf("\n\n\033[32m              OOOOOOOOOOO 	\n");
-printf("          OOOOOOOOOOOOOOOOOOO 		\n");
-printf("       OOOOOO  OOOOOOOOO  OOOOOO 	\n");
-printf("     OOOOOO      OOOOO      OOOOOO 	\n");
-printf("   OOOOOOOO  #   OOOOO  #   OOOOOOOO 	\n");
-printf("  OOOOOOOOOO    OOOOOOO    OOOOOOOOOO 	\n");
-printf(" OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO 	\n");
-printf(" OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO 	\n");
-printf(" OOOO  OOOOOOOOOOOOOOOOOOOOOOOOO  OOOO 	\n");
-printf("  OOOO  OOOOOOOOOOOOOOOOOOOOOOO   OOOO 	\n");
-printf("   OOOO   OOOOOOOOOOOOOOOOOOOO   OOOO 	\n");
-printf("     OOOOO   OOOOOOOOOOOOOOO   OOOO 	\n");
-printf("       OOOOOO   OOOOOOOOO   OOOOOO 	\n");
-printf("          OOOOOO         OOOOOO 	\n");
-printf("              OOOOOOOOOOOO 		\n");
-
-printf("\n\033[1;32mPARABÉNS! \033[mVocê acertou!\n");
-printf("\nVocê fez %.2f pontos. Até a próxima!\n\n", pontos);
-
-} else {
-
-printf("\n\n\033[31m \\|/ ____ \\|/ 	\n");
-printf("  @~/ ,. \\~@ 			\n");
-printf(" /_( \\__/ )_\\ 		\n");
-printf("    \\__U_/ 			\n");
-
-printf("\n\033[1;31mVOCE PERDEU! \033[mTente novamente!\n\n");
-}
-
-printf("\nDeseja jogar novamente? Se sim, Digite 1, senão, digite 0: ");
-scanf("%d", &jogardenovo);
-
-} while(jogardenovo == 1);
-
-printf("\n\033[32mOBRIGADO POR JOGAR!!\033[m");
-printf("\n\033[33mFim de jogo\033[m\n\n");
+	printf("\n\033[32mOBRIGADO POR JOGAR!!\033[m");
+	printf("\n\033[33mFim de jogo\033[m\n\n");
 }
